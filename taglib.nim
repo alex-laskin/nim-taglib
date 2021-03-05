@@ -65,6 +65,16 @@ type
   TaglibError* = object of Exception
   InvalidFileError* = object of TaglibError
 
+proc close*(file: var File) = 
+  taglib_tag_free_strings()
+  taglib_file_free(file.cfile) 
+  file.cfile = cast[CFile](0)
+  file.tag = cast[CTag](0)
+  file.ap = cast[CAudioProperties](0)
+
+proc `=destroy`*(file: var File) =
+  file.close()
+
 proc init_file(path: string, cfile: CFile): File =
   if isNil(cfile):
     raise newException(IOError, "File could not be read.")
@@ -95,16 +105,6 @@ proc open_unknown*(path: string): File =
 
 proc save*(file: File) =
   discard taglib_file_save(file.cfile)
-
-proc close*(file: var File) = 
-  taglib_tag_free_strings()
-  taglib_file_free(file.cfile) 
-  file.cfile = cast[CFile](0)
-  file.tag = cast[CTag](0)
-  file.ap = cast[CAudioProperties](0)
-
-proc `=destroy`*(file: var File) =
-  file.close()
 
 
 {.push inline.}
